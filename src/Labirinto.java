@@ -50,10 +50,14 @@ public class Labirinto {
         return new int[]{x, y};
     }
 
+    public void marcarPosicaoInicial(int x, int y, int ratoId) {
+        grid[y][x] = (char) ('0' + ratoId);
+    }
+
     public void imprimirLabirinto() {
         for (int i = 0; i < tamanho; i++) {
             for (int j = 0; j < tamanho; j++) {
-                System.out.print(grid[i][j] + "_");
+                System.out.print(grid[i][j] + " ");
             }
             System.out.println();
         }

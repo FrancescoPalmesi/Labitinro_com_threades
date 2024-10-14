@@ -2,14 +2,14 @@ import java.util.concurrent.*;
 
 public class LabirintoComThreads {
     public static void main(String[] args) {
-        int tamanho = 10; // Tamanho do labirinto
-        int numRatos = 3; // Número de ratos
+        int tamanho = 10;
+        int numRatos = 3;
 
         Labirinto labirinto = new Labirinto(tamanho);
         labirinto.gerarLabirinto();
         labirinto.colocarQueijo(0, 0);
 
-        System.out.println("Labirinto inicial:");
+        System.out.println("Labirinto inicial (Q = Queijo, números = posições iniciais dos ratos):");
         labirinto.imprimirLabirinto();
 
         ExecutorService executor = Executors.newFixedThreadPool(numRatos);
@@ -24,8 +24,8 @@ public class LabirintoComThreads {
 
         try {
             while (!executor.awaitTermination(100, TimeUnit.MILLISECONDS)) {
-                if (Rato.isQueijoEncontrado()) {
-                    executor.shutdownNow(); // Interrompe todas as threads
+                if (Rato.isQueijoEncontrado() || Rato.getRatosTerminados() == numRatos) {
+                    executor.shutdownNow();
                     break;
                 }
             }
@@ -35,5 +35,10 @@ public class LabirintoComThreads {
 
         System.out.println("\nEstado final do labirinto:");
         labirinto.imprimirLabirinto();
+
+        if (!Rato.isQueijoEncontrado()) {
+            System.out.println("\n NENHUM RATO ENCONTROU O QUEIJO! ");
+            System.out.println("Todos os ratos ficaram presos ou não conseguiram chegar ao queijo.");
+        }
     }
 }

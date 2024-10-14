@@ -7,12 +7,15 @@ public class Rato implements Runnable {
     private Set<String> caminhoPercorrido = new HashSet<>();
     private Random random = new Random();
     private static volatile boolean queijoEncontrado = false;
+    private static int ratosTerminados = 0;
+    private static final Object lock = new Object();
 
     public Rato(int id, int x, int y, Labirinto labirinto) {
         this.id = id;
         this.x = x;
         this.y = y;
         this.labirinto = labirinto;
+        this.labirinto.marcarPosicaoInicial(x, y, id);
     }
 
     @Override
@@ -25,16 +28,23 @@ public class Rato implements Runnable {
                 System.out.println("Todos os outros ratos param de procurar.");
                 break;
             }
-            mover();
-            try {
-                Thread.sleep(100); // Pausa para visualização
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (!mover()) {
+                // Rato ficou preso
+                break;
             }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+        synchronized (lock) {
+            ratosTerminados++;
         }
     }
 
-    private void mover() {
+    private boolean mover() {
         int[] direcoes = {0, 1, 2, 3}; // 0: cima, 1: direita, 2: baixo, 3: esquerda
         Collections.shuffle(Arrays.asList(direcoes));
 
@@ -56,12 +66,19 @@ public class Rato implements Runnable {
                 caminhoPercorrido.add(x + "," + y);
                 labirinto.marcarVisitado(x, y);
                 System.out.println("Rato " + id + " moveu para (" + x + "," + y + ")");
-                return;
+                return true; // O rato conseguiu se mover
             }
         }
+
+        System.out.println("Rato " + id + " está preso na posição (" + x + "," + y + ")");
+        return false; // O rato não conseguiu se mover
     }
 
     public static boolean isQueijoEncontrado() {
         return queijoEncontrado;
+    }
+
+    public static int getRatosTerminados() {
+        return ratosTerminados;
     }
 }
